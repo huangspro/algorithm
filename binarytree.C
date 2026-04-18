@@ -27,15 +27,16 @@ public:
     return left==NULL && right==NULL;
   }
 
+  
 };
 
 template < typename T >
 class BinaryTree{
   node<T>* root = NULL;
   
-  T get_in(int key, node<T>* sub){ 
+  node<T>* get_in(int key, node<T>* sub){ 
     if(sub == NULL)return NULL;
-    if(sub->key==key)return sub->value;
+    if(sub->key==key)return sub;
     if(sub->all_empty())return NULL;
     else if(key > sub->key)return get_in(key, sub->right);
     else return get_in(key, sub->left);
@@ -58,12 +59,14 @@ class BinaryTree{
     }
   }
   
+  
 public:
   BinaryTree(){}
   
   T get(int key){
     if(is_empty())return NULL;
-    return get_in(key, root);
+    node<T>* tem = get_in(key, root);
+    if(tem!=NULL)return tem->value;
   }
   
   void insert(int key, T value){
@@ -74,17 +77,59 @@ public:
     return root==NULL;
   }
   
+  T delMax(node<T>* sub){
+    if(sub==NULL)return NULL;
+    if(sub->right!=NULL){return delMax(sub->right);}
+    else{
+      if(sub->parent!=NULL){sub->parent->r(sub->left);if(sub->left!=NULL)sub->left->p(sub->parent);}
+      else{root = sub->left;if(root!=NULL)root->p(NULL);}
+      T tem = sub->value;
+      delete sub;
+      return tem;
+    }
+  }
   
+  T delMin(node<T>* sub){
+    if(sub==NULL)return NULL;
+    if(sub->left!=NULL){return delMin(sub->left);}
+    else{
+      if(sub->parent!=NULL){sub->parent->l(sub->right);if(sub->right!=NULL)sub->right->p(sub->parent);}
+      else{root = sub->right;if(root!=NULL)root->p(NULL);}
+      T tem = sub->value;
+      delete sub;
+      return tem;
+    }
+  }
+  
+  T del(int key){
+    node<T>* tem = get_in(key, root);
+    if(tem != NULL){
+      T t = delMin(tem->right);
+      T result;
+      if(t != NULL){
+        result = tem->value;
+        tem->value = t;
+        return result;
+      }else{
+        if(tem->left!=NULL){
+          tem->left->p(tem->parent);
+          tem->parent->l(tem->left);
+        }
+        result = tem->value;
+        delete tem;
+        return result;
+      }
+    }else return NULL;
+  }
 };
 
 int main(){
   BinaryTree<double> B;
   B.insert(2, 10.5);
   B.insert(5, 11.5);
-  B.insert(4, 12.5);
+  B.insert(6, 12.5);
   B.insert(1, 13.5);
   B.insert(3, 14.5);
-  for(int i=1;i<=5;i++){
-    cout<<B.get(i)<<endl;
-  }
+  cout<<B.del(5)<<endl;
+  
 }
